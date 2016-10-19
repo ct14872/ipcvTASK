@@ -1,1 +1,1 @@
-# ipcvTASK
+# The Coin Counter Challenge

@@ -9,7 +9,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #include <stdio.h>
-#include <opencv/opencv.hpp>
+#include <opencv2/opencv.hpp>
 
 using namespace cv;           //make available OpenCV namespace
 
