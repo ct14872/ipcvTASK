@@ -11,10 +11,13 @@
 #include <stdio.h>
 #include <opencv2/opencv.hpp>
 
+
 using namespace cv;           //make available OpenCV namespace
 using namespace std;
 
 const double pi = atan(1)*4;
+const int radius = 2;
+const int radius2 = 40;
 
 int abs(int x){
   if(x<0)
@@ -62,9 +65,10 @@ bool valid(int num, int min, int max){
   return true;
 }
 
-int hough(const Mat& original_thr, const Mat& grads, Mat &hspace, uchar hough_thr, uchar minR, uchar maxR){
+int hough(const Mat& original_thr, const Mat& grads, Mat &hspace, uchar hough_thr, uchar minR, uchar maxR, const Mat& orig){
   int sizes[3] = {original_thr.rows,original_thr.cols,maxR-minR};
   hspace.create(3,sizes,original_thr.type());
+
   for(int j=0;j<original_thr.rows;j++)
   {
     for(int i=0;i<original_thr.cols;i++)
@@ -75,67 +79,25 @@ int hough(const Mat& original_thr, const Mat& grads, Mat &hspace, uchar hough_th
         {
           int x0 = i+r*cos(grads.at<uchar>(j,i)/255.0*2*pi-pi);
           int y0 = j+r*sin(grads.at<uchar>(j,i)/255.0*2*pi-pi);
-          if(valid(x0-1,0,original_thr.cols) && valid(y0-1,0,original_thr.rows))
-            hspace.at<uchar>(y0-1,x0-1,r-minR) += 1;
-          if(valid(x0,0,original_thr.cols) && valid(y0-1,0,original_thr.rows))
-            hspace.at<uchar>(y0-1,x0,r-minR) += 1;
-          if(valid(x0+1,0,original_thr.cols) && valid(y0-1,0,original_thr.rows))
-            hspace.at<uchar>(y0-1,x0+1,r-minR) += 1;
-          if(valid(x0-1,0,original_thr.cols) && valid(y0,0,original_thr.rows))
-            hspace.at<uchar>(y0,x0-1,r-minR) += 1;
-          if(valid(x0,0,original_thr.cols) && valid(y0,0,original_thr.rows))
-            hspace.at<uchar>(y0,x0,r-minR) += 1;
-          if(valid(x0+1,0,original_thr.cols) && valid(y0,0,original_thr.rows))
-            hspace.at<uchar>(y0,x0+1,r-minR) += 1;
-          if(valid(x0-1,0,original_thr.cols) && valid(y0+1,0,original_thr.rows))
-            hspace.at<uchar>(y0+1,x0-1,r-minR) += 1;
-          if(valid(x0,0,original_thr.cols) && valid(y0+1,0,original_thr.rows))
-            hspace.at<uchar>(y0+1,x0,r-minR) += 1;
-          if(valid(x0+1,0,original_thr.cols) && valid(y0+1,0,original_thr.rows))
-            hspace.at<uchar>(y0+1,x0+1,r-minR) += 1;
 
-          if(valid(r-1,minR,maxR))
-          {
-            if(valid(x0-1,0,original_thr.cols) && valid(y0-1,0,original_thr.rows))
-              hspace.at<uchar>(y0-1,x0-1,r-minR-1) += 1;
-            if(valid(x0,0,original_thr.cols) && valid(y0-1,0,original_thr.rows))
-              hspace.at<uchar>(y0-1,x0,r-minR-1) += 1;
-            if(valid(x0+1,0,original_thr.cols) && valid(y0-1,0,original_thr.rows))
-              hspace.at<uchar>(y0-1,x0+1,r-minR-1) += 1;
-            if(valid(x0-1,0,original_thr.cols) && valid(y0,0,original_thr.rows))
-              hspace.at<uchar>(y0,x0-1,r-minR-1) += 1;
-            if(valid(x0,0,original_thr.cols) && valid(y0,0,original_thr.rows))
-              hspace.at<uchar>(y0,x0,r-minR-1) += 1;
-            if(valid(x0+1,0,original_thr.cols) && valid(y0,0,original_thr.rows))
-              hspace.at<uchar>(y0,x0+1,r-minR-1) += 1;
-            if(valid(x0-1,0,original_thr.cols) && valid(y0+1,0,original_thr.rows))
-              hspace.at<uchar>(y0+1,x0-1,r-minR-1) += 1;
-            if(valid(x0,0,original_thr.cols) && valid(y0+1,0,original_thr.rows))
-              hspace.at<uchar>(y0+1,x0,r-minR-1) += 1;
-            if(valid(x0+1,0,original_thr.cols) && valid(y0+1,0,original_thr.rows))
-              hspace.at<uchar>(y0+1,x0+1,r-minR-1) += 1;
+          for(int q=y0-radius;q<y0+radius;q++){
+            for(int l=x0-radius;l<x0+radius;l++)
+            {
+              if(valid(l,0,original_thr.cols) && valid(q,0,original_thr.rows))
+                if(hspace.at<uchar>(q,l,r-minR)<255)
+                  hspace.at<uchar>(q,l,r-minR) += 1;
+            }
           }
 
-          if(valid(r+1,minR,maxR))
-          {
-            if(valid(x0-1,0,original_thr.cols) && valid(y0-1,0,original_thr.rows))
-              hspace.at<uchar>(y0-1,x0-1,r-minR) += 1;
-            if(valid(x0,0,original_thr.cols) && valid(y0-1,0,original_thr.rows))
-              hspace.at<uchar>(y0-1,x0,r-minR) += 1;
-            if(valid(x0+1,0,original_thr.cols) && valid(y0-1,0,original_thr.rows))
-              hspace.at<uchar>(y0-1,x0+1,r-minR) += 1;
-            if(valid(x0-1,0,original_thr.cols) && valid(y0,0,original_thr.rows))
-              hspace.at<uchar>(y0,x0-1,r-minR) += 1;
-            if(valid(x0,0,original_thr.cols) && valid(y0,0,original_thr.rows))
-              hspace.at<uchar>(y0,x0,r-minR) += 1;
-            if(valid(x0+1,0,original_thr.cols) && valid(y0,0,original_thr.rows))
-              hspace.at<uchar>(y0,x0+1,r-minR) += 1;
-            if(valid(x0-1,0,original_thr.cols) && valid(y0+1,0,original_thr.rows))
-              hspace.at<uchar>(y0+1,x0-1,r-minR) += 1;
-            if(valid(x0,0,original_thr.cols) && valid(y0+1,0,original_thr.rows))
-              hspace.at<uchar>(y0+1,x0,r-minR) += 1;
-            if(valid(x0+1,0,original_thr.cols) && valid(y0+1,0,original_thr.rows))
-              hspace.at<uchar>(y0+1,x0+1,r-minR) += 1;
+          x0 = i-r*cos(grads.at<uchar>(j,i)/255.0*2*pi-pi);
+          y0 = j-r*sin(grads.at<uchar>(j,i)/255.0*2*pi-pi);
+          for(int q=y0-radius;q<y0+radius;q++){
+            for(int l=x0-radius;l<x0+radius;l++)
+            {
+              if(valid(l,0,original_thr.cols) && valid(q,0,original_thr.rows))
+                if(hspace.at<uchar>(q,l,r-minR)<255)
+                  hspace.at<uchar>(q,l,r-minR) += 1;
+            }
           }
         }
       }
@@ -146,6 +108,7 @@ int hough(const Mat& original_thr, const Mat& grads, Mat &hspace, uchar hough_th
   Mat hspace2DLog;
   hspace2DLog.create(hspace2D.size(),hspace2D.type());
   int count = 0;
+
   for(int j=0;j<original_thr.rows;j++)
   {
     for(int i=0;i<original_thr.cols;i++)
@@ -153,17 +116,53 @@ int hough(const Mat& original_thr, const Mat& grads, Mat &hspace, uchar hough_th
       hspace2D.at<uchar>(j,i) = 0;
       for(int r=minR;r<maxR;r++)
       {
-        hspace2D.at<uchar>(j,i) += hspace.at<uchar>(j,i,r-minR);
-        if(hspace.at<uchar>(j,i,r-minR)>hough_thr){
-          cout << "Coin found: (" << i <<","<<j<<") r="<<r<<endl;
-          count++;
-        }
+        if(hspace2D.at<uchar>(j,i)+hspace.at<uchar>(j,i,r-minR)<255)
+          hspace2D.at<uchar>(j,i) += hspace.at<uchar>(j,i,r-minR);
+        else
+          hspace2D.at<uchar>(j,i) = 255;
       }
       hspace2DLog.at<uchar>(j,i)=50*log(1+hspace2D.at<uchar>(j,i));
     }
   }
+  Mat result;
+  result = orig.clone();
+
+  for(int j=0;j<original_thr.rows;j++)
+  {
+    for(int i=0;i<original_thr.cols;i++)
+    {
+      for(int r=minR;r<maxR;r++)
+      {
+        if(hspace.at<uchar>(j,i,r-minR)>hough_thr){
+          int max[3]={0,0,0};
+          int maxV=0;
+          for(int y=j-radius2;y<j+radius2;y++){
+            for(int x=i-radius2;x<i+radius2;x++){
+              for(int w=r-radius2;w<r+radius2;w++){
+                if(valid(x,0,original_thr.cols) && valid(y,0,original_thr.rows) && valid(w,minR,maxR)){
+                  if(hspace.at<uchar>(y,x,w-minR)>=maxV){
+                    maxV = hspace.at<uchar>(y,x,w-minR);
+                    max[0]=x;
+                    max[1]=y;
+                    max[2]=w;
+                  }
+                  hspace.at<uchar>(y,x,w-minR) = 0;
+                }
+              }
+            }
+          }
+          cout << "Coin found: (" << i <<","<<j<<") r="<<r<<endl;
+          count++;
+          circle(result, Point(max[0],max[1]),max[2],cvScalar(255,0,0),2);
+        }
+      }
+    }
+  }
   namedWindow("Hough 2D", CV_WINDOW_AUTOSIZE);
-  imshow("Hough 2D", hspace2DLog);
+  imshow("Hough 2D", hspace2D);
+  waitKey(0);
+  namedWindow("Result!!!", CV_WINDOW_AUTOSIZE);
+  imshow("Result!!!", result);
   waitKey(0);
 
   return count;
@@ -184,7 +183,8 @@ void sobel(const Mat& image, Mat& dx, Mat& dy, Mat& mag, Mat& dir){
   for(int j=1;j<image.rows-1;j++)
   {
     for(int i=1;i<image.cols-1;i++){
-      mag.at<uchar>(j,i) = sqrt(sqr(dx.at<uchar>(j,i)-127)+sqr(dy.at<uchar>(j,i)-127));
+      mag.at<uchar>(j,i) = sqrt( sqr( dx.at<uchar>(j,i)-127 )+sqr( dy.at<uchar>(j,i)-127 ) );
+      //mag.at<uchar>(j,i) = 0.2*sqrt( sqr( (dx.at<uchar>(j,i)-127)*8 )+sqr( (dy.at<uchar>(j,i)-127)*8 ) );
     }
   }
 
@@ -223,7 +223,7 @@ void threshold(const Mat& original, Mat& result){
   {
     for(int i=0;i<original.cols;i++)
     {
-      if(original.at<uchar>(j,i)>30)
+      if(original.at<uchar>(j,i)>31)
       {
         result.at<uchar>(j,i)=255;
       }
@@ -243,10 +243,12 @@ int main() {
 
   //declare a matrix container to hold an image
   Mat image;
+  Mat imageGray;
   Mat dx,dy,mag,dir,thres,grads,hspace;
 
   //load image from a file into the container
-  image = imread("coins1.png", IMREAD_GRAYSCALE);
+  image = imread("coins2.png", IMREAD_UNCHANGED);
+  cvtColor( image, imageGray, CV_BGR2GRAY );
   //imwrite("gray.png",image);
 
   //construct a window for image display
@@ -258,11 +260,11 @@ int main() {
   //wait for a key press until returning from the program
   waitKey(0);
 
-  sobel(image,dx,dy,mag,dir);
+  sobel(imageGray,dx,dy,mag,dir);
 
   threshold(mag, thres);
 
-  int count = hough(thres, dir, hspace, 50, 26, 30);
+  int count = hough(thres, dir, hspace, 75, 25, 100,image);
   cout << "Coins detected: " << count << endl;
   //free memory occupied by image
   image.release();
