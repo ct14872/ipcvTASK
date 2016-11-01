@@ -16,7 +16,7 @@ using namespace cv;           //make available OpenCV namespace
 using namespace std;
 
 const double pi = atan(1)*4;
-const int radius = 2;
+const int radius = 1;
 const int radius2 = 40;
 
 int abs(int x){
@@ -223,7 +223,7 @@ void threshold(const Mat& original, Mat& result){
   {
     for(int i=0;i<original.cols;i++)
     {
-      if(original.at<uchar>(j,i)>31)
+      if(original.at<uchar>(j,i)>29)
       {
         result.at<uchar>(j,i)=255;
       }
@@ -247,7 +247,7 @@ int main() {
   Mat dx,dy,mag,dir,thres,grads,hspace;
 
   //load image from a file into the container
-  image = imread("coins2.png", IMREAD_UNCHANGED);
+  image = imread("coins1.png", IMREAD_UNCHANGED);
   cvtColor( image, imageGray, CV_BGR2GRAY );
   //imwrite("gray.png",image);
 
@@ -264,7 +264,7 @@ int main() {
 
   threshold(mag, thres);
 
-  int count = hough(thres, dir, hspace, 75, 25, 100,image);
+  int count = hough(thres, dir, hspace, 40, 25, 100,image);
   cout << "Coins detected: " << count << endl;
   //free memory occupied by image
   image.release();
